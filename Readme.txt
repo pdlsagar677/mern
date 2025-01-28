@@ -530,4 +530,48 @@ app.use(errorMiddleware);
 
 
 
-//creating 
+//creating a contact router 
+contact-router.js
+import express from "express";
+import contactForm from "../controllers/contact-controller.js"; // Using `import` here
+
+const router = express.Router();
+
+router.route("/contact").post(contactForm);
+
+export default router;
+
+----create contcat controller---
+import Contact from '../models/contact-model.js';
+
+const contactForm = async (req, res) => {
+  try {
+    const response = req.body;
+    await Contact.create(response);
+    return res.status(200).json({ message: "Message sent successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Message not delivered" });
+  }
+};
+
+export default contactForm;
+
+
+
+
+create contact model
+
+import { Schema, model } from'mongoose';
+const contactSchema = new Schema({
+  username: { type: String, required: true },
+  email: { type: String, required: true },
+  message: { type: String, required: true },
+});
+// create a new collections(Model)
+const Contact = new model("Contact", contactSchema);
+ export default Contact;
+
+---import route in server.js--
+import contactRoute  from './router/contact-router.js'
+app.use("/api/form", contactRoute);
