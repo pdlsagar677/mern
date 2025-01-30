@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../store/auth";
 
- const Login = () => {
+const Login = () => {
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
 
+  const { storeTokenInLS } = useAuth();
   const navigate = useNavigate();
 
   // Handle input field value
@@ -19,11 +22,31 @@ import { useNavigate } from "react-router-dom";
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your login logic here (e.g., API call, validation, etc.)
-    console.log("Login Data:", user);
-    navigate("/dashboard"); // Redirect to dashboard or another page after login
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        user,  // `user` object will be sent in the request body
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("after login: ", response.data);
+
+        // Corrected line: store token from response.data
+        storeTokenInLS(response.data.token);  // Access the token from response.data
+
+        navigate("/");  // Navigate to the home page or any other page after successful login
+      }
+    } catch (error) {
+      console.error("Error:", error.response ? error.response.data : error.message);
+      // Handle error, display error message to user (optional)
+    }
   };
 
   return (
@@ -84,4 +107,5 @@ import { useNavigate } from "react-router-dom";
     </>
   );
 };
-export  default Login;
+
+export default Login;

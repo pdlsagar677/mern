@@ -171,10 +171,6 @@
 /* registration css
  */
 
-
-
-
-
 /* Section styles */
 .register-section {
   display: flex;
@@ -612,4 +608,10 @@ p {
     flex-direction: column;
     gap: 15px;
   }
+}
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: bold;
 }

@@ -1,9 +1,10 @@
 import { NavLink } from "react-router-dom";
+import React from 'react';
 import "./Navbar.css";
 
-export const Navbar = () => {
+ const Navbar = () => {
   return (
-    <>
+    <div>
       <header>
         <div className="container">
           <div className="logo-brand">
@@ -34,6 +35,7 @@ export const Navbar = () => {
           </nav>
         </div>
       </header>
-    </>
+    </div>
   );
 };
+export default Navbar;

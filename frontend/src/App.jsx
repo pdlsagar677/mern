@@ -1,34 +1,32 @@
-// src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React from 'react';
+import { BrowserRouter ,  Routes, Route } from "react-router-dom";
 import './App.css';
-import { Navbar } from './components/Navbar/Navbar';
-import { Footer } from './components/Footer/Footer';
+import Navbar from './components/Navbar/Navbar'; // Correct import (default export)
+import Footer from './components/Footer/Footer';
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Service from "./pages/Services";
+import Services from "./pages/Services"; // Ensure the name matches the file
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import Error from "./pages/Errorpage";  // Use the correct import (default export)
+import Error from "./pages/Errorpage"; // Ensure this is the correct path
 
-function App() {
+const App = () => {
   return (
-    <Router>
+    <BrowserRouter>
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/service" element={<Service />} />
+        <Route path="/service" element={<Services />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        
-        {/* Fallback route for unmatched paths */}
         <Route path="*" element={<Error />} />
       </Routes>
       <Footer />
-    </Router>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;

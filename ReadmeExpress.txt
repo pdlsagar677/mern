@@ -577,3 +577,16 @@ import contactRoute  from './router/contact-router.js'
 app.use("/api/form", contactRoute);
 
 
+connection mongodb and react js
+npm i cors
+server.js
+import cors from 'cors';
+
+const corsOptions= {
+  origin:"http://localhost:5173",
+  method:"GET, POST, PUT, DELETE, PATCH, HEAD",
+  Credential:true,
+};
+app.use(cors(corsOptions));
+add this in server .js
+
