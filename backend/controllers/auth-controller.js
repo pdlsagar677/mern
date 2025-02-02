@@ -69,5 +69,7 @@ const login = async (req, res) => {
 };
 
 
+
+
 // Correct export statement
-export default { home, register, login };
+export default { home, register, login};
