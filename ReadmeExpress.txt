@@ -590,3 +590,63 @@ const corsOptions= {
 app.use(cors(corsOptions));
 add this in server .js
 
+//create a user logic function that a user can get user data \
+create a auth middleware
+import jwt from 'jsonwebtoken';
+import User from "../models/user-model.js";
+
+
+const authMiddleware = async (req, res, next) => {
+    const token = req.header("Authorization");
+  
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. Token not provided" });
+    }
+  
+    // Remove the "Bearer " prefix
+    const jwtToken = token.replace("Bearer", "").trim();
+    console.log(jwtToken);
+  
+    try {
+      // Verifying the token
+      const isVerified = jwt.verify(jwtToken, process.env.JWT_SECRET_KEY);
+      console.log(isVerified);
+  
+      // Get user details (don't include password)
+      const userData = await User.findOne({ email: isVerified.email }).select("-password");
+  
+      if (!userData) {
+        return res.status(401).json({ message: "User not found" });
+      }
+  
+      // Attach user and token to the request
+      req.token = token;
+      req.user = userData;
+      req.userID = userData._id;
+  
+      // Proceed to the next middleware or route handler
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: "Unauthorized. Invalid token." });
+    }
+  };
+  export default authMiddleware;
+
+create a user controller
+const user = async(req,res)=>{
+  try{
+    const userData = req.user;
+    console.log(userData);
+    return res.status(200).json({msg:userData});
+
+  }
+  catch(error){
+    console.log(`error from user route ${error}`);
+  }
+}
+
+create a router for getting user data from verified token
+
+router.get('/user', authMiddleware,authController.user); 

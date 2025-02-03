@@ -69,7 +69,18 @@ const login = async (req, res) => {
 };
 
 
+//creating user logic
+const user = async(req,res)=>{
+  try{
+    const userData = req.user;
+    console.log(userData);
+    return res.status(200).json({msg:userData});
 
+  }
+  catch(error){
+    console.log(`error from user route ${error}`);
+  }
+}
 
 // Correct export statement
-export default { home, register, login};
+export default { home, register, login,user};

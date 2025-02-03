@@ -1,84 +1,128 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../store/auth";
+import axios from "axios";
+
+const defaultContactFormData = {
+  message: "",
+};
 
 const Contact = () => {
-  const [contact, setContact] = useState({
-    username: "",
-    email: "",
-    message: "",
-  });
+  const { user, isLoggedIn, token, loading } = useAuth(); // Get user data, auth status, token, and loading from context
+  const [data, setData] = useState(defaultContactFormData);
 
-  // lets tackle our handleInput
+  // If the user is logged in, set their name and email into the form automatically
+  useEffect(() => {
+    if (user) {
+      setData({
+        username: user.username || "",  // Set username from user if available
+        email: user.email || "",        // Set email from user if available
+        message: "", // Keep message empty for now
+      });
+    }
+  }, [user]);
+
+  // Handle input change
   const handleInput = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-
-    setContact({
-      ...contact,
-      [name]: value,
-    });
+    const { name, value } = e.target;
+    setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // handle fomr getFormSubmissionInfo
-  const handleSubmit = (e) => {
+  // Handle form submission using axios
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(contact);
+    // If loading, prevent form submission
+    if (loading) {
+      alert("User data is still loading. Please wait.");
+      return;
+    }
+
+    // Check if user is available and logged in
+    if (!isLoggedIn) {
+      alert("You must be logged in to send a message!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/form/contact",
+        {
+          username: data.username || "",  // Use the username entered in the form
+          email: data.email || "",        // Use the email entered in the form
+          message: data.message,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the token in the request header
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert(response.data.message || "Your message has been sent successfully!");
+        setData(defaultContactFormData); // Reset the form data
+      } else {
+        console.error("API Error:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again later.");
+    }
   };
 
-//  Help me reach 1 Million subs 👉 https://youtube.com/thapatechnical
+  // Display loading message if data is still loading
+  if (loading) {
+    return <p>Loading user data...</p>;
+  }
 
   return (
     <>
       <section className="section-contact">
         <div className="contact-content container">
-          <h1 className="main-heading">contact us</h1>
+          <h1 className="main-heading">Contact Us</h1>
         </div>
-        {/* contact page main  */}
         <div className="container grid grid-two-cols">
-        <div className="contact-img">
-  <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 3h18v18H3z"/>
-    <path d="M12 3v18M3 12h18"/>
-    <circle cx="12" cy="12" r="5"/>
-  </svg>
-</div>
+          <div className="contact-img">
+            {/* Add SVG or other content here */}
+          </div>
 
-          {/* contact form content actual  */}
           <section className="section-form">
             <form onSubmit={handleSubmit}>
+              {/* Allow user to edit username and email */}
               <div>
-                <label htmlFor="username">username</label>
+                <label htmlFor="username">Username</label>
                 <input
                   type="text"
                   name="username"
                   id="username"
                   autoComplete="off"
-                  value={contact.username}
-                  onChange={handleInput}
+                  value={data.username || ""}  // Use data.username from the form state
+                  onChange={handleInput} // Allow editing the username
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="email">email</label>
+                <label htmlFor="email">Email</label>
                 <input
                   type="email"
                   name="email"
                   id="email"
                   autoComplete="off"
-                  value={contact.email}
-                  onChange={handleInput}
+                  value={data.email || ""}  // Use data.email from the form state
+                  onChange={handleInput} // Allow editing the email
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="message">message</label>
+                <label htmlFor="message">Message</label>
                 <textarea
                   name="message"
                   id="message"
                   autoComplete="off"
-                  value={contact.message}
+                  value={data.message}
                   onChange={handleInput}
                   required
                   cols="30"
@@ -87,15 +131,16 @@ const Contact = () => {
               </div>
 
               <div>
-                <button type="submit">submit</button>
+                <button type="submit">Submit</button>
               </div>
             </form>
+            {!isLoggedIn && <p>Please log in to send a message.</p>} {/* Display message if user is not logged in */}
           </section>
         </div>
 
         <section className="mb-3">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.2613173278896!2d73.91411937501422!3d18.562253982539413!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c147b8b3a3bf%3A0x6f7fdcc8e4d6c77e!2sPhoenix%20Marketcity%20Pune!5e0!3m2!1sen!2sin!4v1697604225432!5m2!1sen!2sin"
+            src="https://www.google.com/maps/embed?pb=..."
             width="100%"
             height="450"
             allowFullScreen
@@ -107,4 +152,5 @@ const Contact = () => {
     </>
   );
 };
+
 export default Contact;
