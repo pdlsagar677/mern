@@ -443,90 +443,108 @@ const Contact = () => {
 
 export default Contact;
 change the auth jsx to 
-
 import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 export const AuthContext = createContext();
 
-// eslint-disable-next-line react/prop-types
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(""); // Token retrieved from localStorage
-  const [user, setUser] = useState(null); // User data, initially null
-  const [loading, setLoading] = useState(true); // Loading state to handle data fetching
+  const [token, setToken] = useState(""); // Store the token state
+  const [user, setUser] = useState(""); // Store the user data
+  const [services, setServices] = useState([]); // Store services data
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Retrieve token from localStorage on initial load
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken); // Set token if exists
-    } else {
-      setLoading(false); // No token, no need to fetch user data
-    }
-  }, []); // Only runs on mount
+  const authAuthorizationToken = `Bearer ${token}`;
 
-  // Function to fetch user data based on the token
+  // Store token in local storage
+  const storeTokenInLS = (serverToken) => {
+    setToken(serverToken);
+    localStorage.setItem("token", serverToken);
+  };
+
+  // Check if user is logged in
+  const isLoggedIn = !!token;
+
+  // Logout function: Reset token, remove from localStorage, refresh page
+  const LogoutUser = () => {
+    setToken(""); // Reset token state
+    localStorage.removeItem("token"); // Remove token from localStorage
+    window.location.reload(); // Refresh the page
+  };
+
+  // Fetch user data from the server using the token
   const userAuthentication = async () => {
-    if (!token) {
-      setLoading(false); // If no token, stop loading
-      return;
-    }
-
     try {
-      const response = await fetch("http://localhost:5000/api/auth/user", {
-        method: "GET",
+      setIsLoading(true);
+      const response = await axios.get("http://localhost:5001/api/auth/user", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: authAuthorizationToken,
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.userData); // Set user data from API
+      if (response.status === 200) {
+        setUser(response.data.userData);
+        setIsLoading(false);
       } else {
         console.error("Error fetching user data");
       }
     } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false); // Set loading to false after fetching or error
+      console.error("Error during user authentication:", error);
     }
   };
 
-  // Run userAuthentication if the token changes
+  // Fetch services data
+  services pages also added 
+  const getServices = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/data/service");
+      if (response.status === 200) {
+        setServices(response.data.data);
+      } else {
+        console.error("Failed to fetch services");
+      }
+    } catch (error) {
+      console.error("Service frontend error:", error);
+    }
+  };
+
+  // Use effect hooks to load user and services data when token changes
   useEffect(() => {
     if (token) {
-      userAuthentication(); // Fetch user data when token is set
-    } else {
-      setLoading(false); // If no token, stop loading
+      userAuthentication();
+      getServices();
     }
-  }, [token]); // Dependency on token change
+  }, [token]);
 
-  const storeTokenInLS = (serverToken) => {
-    setToken(serverToken);
-    localStorage.setItem("token", serverToken); // Store token in localStorage
-  };
-
-  const LogoutUser = () => {
-    setToken("");
-    setUser(null); // Clear user data on logout
-    localStorage.removeItem("token"); // Remove token from localStorage
-  };
-
-  const isLoggedIn = !!token;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setToken(token);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, storeTokenInLS, LogoutUser, user, loading }}>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        storeTokenInLS,
+        LogoutUser, // Pass the LogoutUser function to the context
+        setToken, // Ensure setToken is available in the context
+        user,
+        services,
+        authAuthorizationToken,
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
+// Custom hook to access AuthContext
 export const useAuth = () => {
   const authContextValue = useContext(AuthContext);
   if (!authContextValue) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth used outside of the Provider");
   }
   return authContextValue;
 };
-
-
+//changes in logout funionality and contact too 

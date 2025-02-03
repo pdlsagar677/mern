@@ -2,7 +2,8 @@ import express from 'express';
 import router from './router/auth-router.js'; 
 import connectDb from './utils/db.js';
 import errorMiddleware from './middleware/error-middleware.js';
-import contactRoute  from './router/contact-router.js'
+import contactRoute  from './router/contact-router.js';
+import serviceRoute from './router/service-router.js';
 import cors from 'cors';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors(corsOptions));
 
 app.use("/api/auth", router);
 app.use("/api/form", contactRoute);
+app.use("/api/data", serviceRoute);
 
 app.use(errorMiddleware);
 

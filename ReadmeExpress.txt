@@ -650,3 +650,6 @@ const user = async(req,res)=>{
 create a router for getting user data from verified token
 
 router.get('/user', authMiddleware,authController.user); 
+
+
+//creating a service schema ,service route, and service controller and post the data from post man

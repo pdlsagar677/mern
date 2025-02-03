@@ -1,79 +1,75 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../store/auth";
-import axios from "axios";
 
 const defaultContactFormData = {
+  username: "",
+  email: "",
   message: "",
 };
 
 const Contact = () => {
-  const { user, isLoggedIn, token, loading } = useAuth(); // Get user data, auth status, token, and loading from context
   const [data, setData] = useState(defaultContactFormData);
+  const { user, isLoggedIn } = useAuth(); // Access user data and login status from AuthContext
 
-  // If the user is logged in, set their name and email into the form automatically
   useEffect(() => {
+    // Pre-fill form with user data if user is logged in
     if (user) {
       setData({
-        username: user.username || "",  // Set username from user if available
-        email: user.email || "",        // Set email from user if available
-        message: "", // Keep message empty for now
+        username: user.username || "",
+        email: user.email || "",
+        message: "",
       });
     }
-  }, [user]);
+  }, [user]); // Runs whenever user data changes
 
-  // Handle input change
+  // Handle input changes for the form fields
   const handleInput = (e) => {
     const { name, value } = e.target;
-    setData((prev) => ({ ...prev, [name]: value }));
+    setData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  // Handle form submission using axios
-  const handleSubmit = async (e) => {
+  // Handle form submission
+  const handleContactForm = async (e) => {
     e.preventDefault();
-
-    // If loading, prevent form submission
-    if (loading) {
-      alert("User data is still loading. Please wait.");
-      return;
-    }
-
-    // Check if user is available and logged in
     if (!isLoggedIn) {
-      alert("You must be logged in to send a message!");
+      alert("You must be logged in to send a message.");
       return;
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/form/contact",
-        {
-          username: data.username || "",  // Use the username entered in the form
-          email: data.email || "",        // Use the email entered in the form
-          message: data.message,
+      const response = await fetch("http://localhost:5000/api/form/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the request header
-          },
-        }
-      );
+        body: JSON.stringify(data),
+      });
 
-      if (response.status === 200) {
-        alert(response.data.message || "Your message has been sent successfully!");
+      if (response.ok) {
+        const responseData = await response.json();
+        alert(responseData.message || "Your message has been sent successfully!");
         setData(defaultContactFormData); // Reset the form data
+        console.log(responseData);
       } else {
         console.error("API Error:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again later.");
     }
   };
 
-  // Display loading message if data is still loading
-  if (loading) {
-    return <p>Loading user data...</p>;
+  if (!isLoggedIn) {
+    return (
+      <section className="section-contact">
+        <div className="contact-content container">
+          <h1 className="main-heading">You must be logged in to contact us</h1>
+        
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -82,23 +78,20 @@ const Contact = () => {
         <div className="contact-content container">
           <h1 className="main-heading">Contact Us</h1>
         </div>
-        <div className="container grid grid-two-cols">
-          <div className="contact-img">
-            {/* Add SVG or other content here */}
-          </div>
+        <div className="container grid grid-half-cols">
+  
 
           <section className="section-form">
-            <form onSubmit={handleSubmit}>
-              {/* Allow user to edit username and email */}
+            <form onSubmit={handleContactForm}>
               <div>
                 <label htmlFor="username">Username</label>
                 <input
                   type="text"
                   name="username"
                   id="username"
-                  autoComplete="off"
-                  value={data.username || ""}  // Use data.username from the form state
-                  onChange={handleInput} // Allow editing the username
+                  value={data.username}
+                  onChange={handleInput}
+                  autoCapitalize="off"
                   required
                 />
               </div>
@@ -109,9 +102,9 @@ const Contact = () => {
                   type="email"
                   name="email"
                   id="email"
-                  autoComplete="off"
-                  value={data.email || ""}  // Use data.email from the form state
-                  onChange={handleInput} // Allow editing the email
+                  value={data.email}
+                  onChange={handleInput}
+                  autoCapitalize="off"
                   required
                 />
               </div>
@@ -121,33 +114,18 @@ const Contact = () => {
                 <textarea
                   name="message"
                   id="message"
-                  autoComplete="off"
                   value={data.message}
                   onChange={handleInput}
                   required
-                  cols="30"
-                  rows="6"
                 ></textarea>
               </div>
 
               <div>
-                <button type="submit">Submit</button>
+                <button type="submit">Send Message</button>
               </div>
             </form>
-            {!isLoggedIn && <p>Please log in to send a message.</p>} {/* Display message if user is not logged in */}
           </section>
         </div>
-
-        <section className="mb-3">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=..."
-            width="100%"
-            height="450"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </section>
       </section>
     </>
   );
