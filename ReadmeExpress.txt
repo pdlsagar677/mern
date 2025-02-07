@@ -653,3 +653,100 @@ router.get('/user', authMiddleware,authController.user);
 
 
 //creating a service schema ,service route, and service controller and post the data from post man
+
+
+//create a admin-router 
+import express from "express";
+import getAllUsers from "../controllers/admin-controller.js";
+
+const router = express.Router();
+
+// Define the POST route for contact form submission, protecting it with authentication
+router.route("/users").get(getAllUsers);
+
+export default router;
+
+
+
+create admin-cnotroller too
+import User from "../models/user-model.js"; // Correct import statement
+
+// *-------------------------------
+//* getAllUsers Logic 📝
+// *-------------------------------
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, { password: 0 });
+    console.log(users);
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No Users Found" });
+    }
+    return res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+export default getAllUsers;
+
+add  router in server file 
+app.use("/api/admin",adminRoute);
+
+
+create contact getting controller too 
+create a admin router too for this 
+
+import Contact from "../models/contact-model.js"; // Correct import statement
+
+const getAllContacts = async (req, res) => {
+    try {
+      const contacts = await Contact.find();
+      console.log(contacts);
+      if (!contacts || contacts.length === 0) {
+        return res.status(404).json({ message: "No Contacts Found" });
+      }
+      return res.status(200).json(contacts);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  export default {getAllUsers,getAllContacts};
+
+
+  adding jwt in admin dashboard
+  create a admin middleware file 
+
+  
+  const adminMiddleware = async (req, res, next) => {
+  try {
+    // Ensure req.user exists before accessing isAdmin
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized. User not found." });
+    }
+
+    // Check if user is an admin
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: "Access denied. User is not an admin." });
+    }
+
+    next(); // Proceed to next middleware
+  } catch (error) {
+    console.error("Admin Middleware Error:", error); // Log error for debugging
+    res.status(500).json({ message: "Internal server error in admin middleware." });
+  }
+};
+
+export default adminMiddleware;
+
+and import auth and adminmiddleware in router file 
+import express from "express";
+import adminController from "../controllers/admin-controller.js";
+import adminMiddleware from "../middleware/admin-middleware.js";
+import authMiddleware from "../middleware/auth-middleware.js";
+const router = express.Router();
+
+// Define the get route for contact form submission, protecting it with authentication
+router.route("/users").get(authMiddleware,adminMiddleware,adminController.getAllUsers);
+router.route("/contacts").get(authMiddleware,adminMiddleware,adminController.getAllContacts);
+
+export default router;

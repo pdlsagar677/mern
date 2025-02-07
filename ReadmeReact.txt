@@ -548,3 +548,60 @@ export const useAuth = () => {
   return authContextValue;
 };
 //changes in logout funionality and contact too 
+
+
+//some changes in contact to show backend error message
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Sending user data:", user);
+  
+    setError(""); // Reset error state
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          username: user.username,
+          email: user.email,
+          phone: user.phone,
+          password: user.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      console.log("Response status:", response.status);
+      console.log("Response data:", response.data);
+  
+      if (response.status >= 200 && response.status < 300) {
+        alert("Registration successful");
+        storeTokenInLS(response.data.token);
+  
+        setUser({ username: "", email: "", phone: "", password: "" });
+  
+        navigate("/login");
+      } else {
+        setError(response.data.message || "An error occurred. Please try again.");
+        alert(response.data.message || "An error occurred. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error.response ? error.response.data : error.message);
+  
+      if (error.response && error.response.data && error.response.data.extraDetails) {
+        const errorMessages = error.response.data.extraDetails.join("\n"); // Format errors for alert
+        setError(errorMessages);
+        alert(errorMessages); // Show errors in an alert popup
+      } else {
+        const errorMessage = "An error occurred. Please try again later.";
+        setError(errorMessage);
+        alert(errorMessage);
+      }
+    }
+  };
+
+
+
+  

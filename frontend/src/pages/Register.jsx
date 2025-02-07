@@ -27,11 +27,10 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Sending user data:", user); // Log user data to inspect before sending
-
-    // Reset previous error messages
-    setError("");
-
+    console.log("Sending user data:", user);
+  
+    setError(""); // Reset error state
+  
     try {
       const response = await axios.post(
         "http://localhost:5000/api/auth/register",
@@ -47,31 +46,36 @@ const Register = () => {
           },
         }
       );
-
-      console.log("Response status:", response.status); // Log the status code for debugging
-      console.log("Response data:", response.data); // Log the response data
-
-      // Check if the response status is either 200 or 201 (or any other success code)
+  
+      console.log("Response status:", response.status);
+      console.log("Response data:", response.data);
+  
       if (response.status >= 200 && response.status < 300) {
         alert("Registration successful");
-        // Use response.data instead of responseData
-        storeTokenInLS(response.data.token); // Corrected to use response.data
-
-        // Clear the form fields after successful registration
+        storeTokenInLS(response.data.token);
+  
         setUser({ username: "", email: "", phone: "", password: "" });
-
-        // Navigate to the login page after successful registration
-        navigate("/login");
+  
+        navigate("/");
       } else {
-        // Handle server-side errors (e.g., email already exists)
         setError(response.data.message || "An error occurred. Please try again.");
+        alert(response.data.message || "An error occurred. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error.response ? error.response.data : error.message);
-      // Set the error state to display error message
-      setError("An error occurred. Please try again later.");
+  
+      if (error.response && error.response.data && error.response.data.extraDetails) {
+        const errorMessages = error.response.data.extraDetails.join("\n"); // Format errors for alert
+        setError(errorMessages);
+        alert(errorMessages); // Show errors in an alert popup
+      } else {
+        const errorMessage = "An error occurred. Please try again later.";
+        setError(errorMessage);
+        alert(errorMessage);
+      }
     }
   };
+  
 
   return (
     <>
