@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   const userAuthentication = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:5001/api/auth/user", {
+      const response = await axios.get("http://localhost:5000/api/auth/user", {
         headers: {
           Authorization: authAuthorizationToken,
         },

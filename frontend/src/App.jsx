@@ -11,6 +11,9 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
 import Error from "./pages/Errorpage"; 
+import AdminLayout from './components/layout/Admin-layout';
+import AdminUser from './pages/Admin-user';
+import AdminContacts from './pages/Admin-Contacts';
 
 const App = () => {
   return (
@@ -25,6 +28,11 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="*" element={<Error />} />
+        //admin route with nested Routes
+        <Route path="/admin" element={<AdminLayout />} >
+        <Route path="users" element={<AdminUser />} />
+        <Route path="contacts" element={<AdminContacts />} />
+        </Route>
       </Routes>
       <Footer />
     </div>
