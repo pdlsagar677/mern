@@ -750,3 +750,48 @@ router.route("/users").get(authMiddleware,adminMiddleware,adminController.getAll
 router.route("/contacts").get(authMiddleware,adminMiddleware,adminController.getAllContacts);
 
 export default router;
+
+in admin controller add two controller
+//get all user by id single user logic
+const getUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await User.findOne({ _id: id }, { password: 0 });
+    return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// user delete by id 
+
+const deleteUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await User.deleteOne({ _id: id });
+    return res.status(200).json({ message: "User Deleted Successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+ and also in router 
+router.route("/users/:id").get(authMiddleware,adminMiddleware,adminController.getUserById);
+
+router.route("/users/delete/:id").delete(authMiddleware,adminMiddleware,adminController.deleteUserById);
+
+
+create deletecontact by id and its route
+
+//delete contact by id
+  const deleteContactById = async (req, res) => {
+    try {
+      const id = req.params.id;
+      await Contact.deleteOne({ _id: id });
+      return res.status(200).json({ message: "Contact Deleted Successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
+router.route("/contacts/delete/:id").delete(authMiddleware,adminMiddleware,adminController.deleteContactById);

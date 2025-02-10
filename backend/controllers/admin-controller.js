@@ -16,7 +16,28 @@ const getAllUsers = async (req, res) => {
     next(error);
   }
 };
+//get all user by id single user logic
+const getUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await User.findOne({ _id: id }, { password: 0 });
+    return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
 
+// user delete by id 
+
+const deleteUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await User.deleteOne({ _id: id });
+    return res.status(200).json({ message: "User Deleted Successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 
@@ -34,4 +55,16 @@ const getAllContacts = async (req, res) => {
     }
   };
 
-  export default {getAllUsers,getAllContacts};
+  //delete contact by id
+  const deleteContactById = async (req, res) => {
+    try {
+      const id = req.params.id;
+      await Contact.deleteOne({ _id: id });
+      return res.status(200).json({ message: "Contact Deleted Successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+
+  export default {getAllUsers,getAllContacts,getUserById,deleteUserById,deleteContactById};

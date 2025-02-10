@@ -6,6 +6,11 @@ const router = express.Router();
 
 // Define the get route for contact form submission, protecting it with authentication
 router.route("/users").get(authMiddleware,adminMiddleware,adminController.getAllUsers);
+router.route("/users/:id").get(authMiddleware,adminMiddleware,adminController.getUserById);
+
+router.route("/users/delete/:id").delete(authMiddleware,adminMiddleware,adminController.deleteUserById);
+
 router.route("/contacts").get(authMiddleware,adminMiddleware,adminController.getAllContacts);
+router.route("/contacts/delete/:id").delete(authMiddleware,adminMiddleware,adminController.deleteContactById);
 
 export default router;
