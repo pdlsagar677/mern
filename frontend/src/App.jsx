@@ -14,6 +14,7 @@ import Error from "./pages/Errorpage";
 import AdminLayout from './components/layout/Admin-layout';
 import AdminUser from './pages/Admin-user';
 import AdminContacts from './pages/Admin-Contacts';
+import AdminUpdate from './pages/Admin-Update';
 
 const App = () => {
   return (
@@ -31,6 +32,8 @@ const App = () => {
         //admin route with nested Routes
         <Route path="/admin" element={<AdminLayout />} >
         <Route path="users" element={<AdminUser />} />
+        <Route path="users/:id/edit" element={<AdminUpdate/>} />
+
         <Route path="contacts" element={<AdminContacts />} />
         </Route>
       </Routes>

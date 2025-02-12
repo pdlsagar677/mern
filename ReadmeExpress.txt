@@ -795,3 +795,23 @@ create deletecontact by id and its route
 
 
 router.route("/contacts/delete/:id").delete(authMiddleware,adminMiddleware,adminController.deleteContactById);
+
+//create a admin update controller
+const updateUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedUserData = req.body;
+
+    const updatedData = await User.updateOne(
+      { _id: id },
+      {
+        $set: updatedUserData,
+      }
+    );
+    return res.status(200).json(updatedData);
+  } catch (error) {
+    next(error);
+  }
+};
+creating route for this 
+router.route("/users/update/:id").patch(authMiddleware,adminMiddleware,adminController.updateUserById);
