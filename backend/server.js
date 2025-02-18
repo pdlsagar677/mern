@@ -3,7 +3,6 @@ import router from './router/auth-router.js';
 import connectDb from './utils/db.js';
 import errorMiddleware from './middleware/error-middleware.js';
 import contactRoute  from './router/contact-router.js';
-import serviceRoute from './router/service-router.js';
 import adminRoute from './router/admin-router.js';
 
 import cors from 'cors';
@@ -21,8 +20,8 @@ app.use(cors(corsOptions));
 
 app.use("/api/auth", router);
 app.use("/api/form", contactRoute);
-app.use("/api/data", serviceRoute);
 app.use("/api/admin",adminRoute);
+
 app.use(errorMiddleware);
 
 const PORT = 5000;

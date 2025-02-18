@@ -1,6 +1,5 @@
 import React from 'react';
 import { Routes, Route } from "react-router-dom";
-import './App.css';
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/Footer/Footer';
 import Home from "./pages/Home";
@@ -15,12 +14,15 @@ import AdminLayout from './components/layout/Admin-layout';
 import AdminUser from './pages/Admin-user';
 import AdminContacts from './pages/Admin-Contacts';
 import AdminUpdate from './pages/Admin-Update';
+import AdminService from './pages/Admin-Service';
+import AdminServiceEdit from './pages/AdminService-Edit';
 
 const App = () => {
   return (
     <div>
       <Navbar />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
@@ -29,12 +31,14 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="*" element={<Error />} />
-        //admin route with nested Routes
+        
+        {/* Admin Routes with nested routes */}
         <Route path="/admin" element={<AdminLayout />} >
-        <Route path="users" element={<AdminUser />} />
-        <Route path="users/:id/edit" element={<AdminUpdate/>} />
-
-        <Route path="contacts" element={<AdminContacts />} />
+          <Route path="users" element={<AdminUser />} />
+          <Route path="users/:id/edit" element={<AdminUpdate />} />
+          <Route path="contacts" element={<AdminContacts />} />
+          <Route path="services" element={<AdminService />} />
+          <Route path="services/:id/edit" element={<AdminServiceEdit />} />
         </Route>
       </Routes>
       <Footer />

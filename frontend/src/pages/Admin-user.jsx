@@ -1,97 +1,79 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../store/auth";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
- const AdminUsers = () => {
+const AdminUsers = () => {
   const { authAuthorizationToken } = useAuth();
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]); // Corrected: useState to initialize an empty array
-
-  // Check if the user is an admin on page load
-  useEffect(() => {
-    if (!authAuthorizationToken) {
-      // Redirect to login page if no token is found
-      navigate("/login");
-    } else {
-      // Optionally fetch user data or perform admin-specific actions
-      getAllUsersData();
-    }
-  }, [authAuthorizationToken, navigate]);
+  const [users, setUsers] = useState([]);
 
   // Function to fetch all users data
   const getAllUsersData = async () => {
     try {
-      console.log(authAuthorizationToken);
+      console.log("Sending token:", authAuthorizationToken); // Debug log
       const response = await fetch("http://localhost:5000/api/admin/users", {
         method: "GET",
         headers: {
-          Authorization: authAuthorizationToken, // Assuming the API expects Bearer token
+          "Content-Type": "application/json",
+          "Authorization": authAuthorizationToken,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        // You may want to check response.status for 401/403
+        throw new Error("Failed to fetch users");
       }
 
       const data = await response.json();
-      setUsers(data); // Set the fetched users data to state
-      // console.log(`Users: ${JSON.stringify(data)}`);
+      setUsers(data);
     } catch (error) {
-      console.error("Error fetching users:", error); // Handle errors if needed
-    }
-  };
-
-  //deleting user 
- 
-  const deleteUser = async (id) => {
-    // Show a confirmation dialog
-    const isConfirmed = window.confirm("Are you sure you want to delete this user?");
-    
-    // If the user confirmed, proceed with deletion
-    if (isConfirmed) {
-      try {
-        const response = await fetch(`http://localhost:5000/api/admin/users/delete/${id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: authAuthorizationToken, // Assuming the API expects Bearer token
-          },
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          console.log(`User deleted: ${data.message}`); // Log the success message after deletion
-  
-          // Display a success message for 3 seconds
-          alert("User deleted successfully!");
-  
-          // Optionally, you can add a setTimeout for a delayed message
-          setTimeout(() => {
-            alert("User deleted successfully!");
-          }, 3000); // Show message after 3 seconds
-        } else {
-          const errorData = await response.json();
-          console.error('Error deleting user:', errorData.message); // Log error message if deletion fails
-        }
-      } catch (error) {
-        console.error('Error during fetch request:', error);
+      console.error("Error fetching users:", error);
+      // Optionally redirect to login if unauthorized:
+      if (error.message.includes("401") || error.message.includes("403")) {
+        navigate("/login");
       }
-    } else {
-      console.log("User deletion cancelled.");
     }
   };
-  
- 
 
+  // Function to delete a user
+  const deleteUser = async (id) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this user?");
+    if (!isConfirmed) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/admin/users/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": authAuthorizationToken,
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error deleting user:", errorData.message);
+        alert("Error deleting user: " + (errorData.message || "Unknown error"));
+      } else {
+        const data = await response.json();
+        console.log(`User deleted: ${data.message}`);
+        alert("User deleted successfully!");
+        // Refresh the users list after deletion
+        getAllUsersData();
+      }
+    } catch (error) {
+      console.error("Error during deletion:", error);
+      alert("Error deleting user");
+    }
+  };
 
-
-  useEffect(()=>{
-    getAllUsersData();
-  },[]);
+  // On initial render, check token and fetch users
+  useEffect(() => {
+    if (!authAuthorizationToken) {
+      navigate("/login");
+    } else {
+      getAllUsersData();
+    }
+  }, [authAuthorizationToken, navigate]);
 
   return (
-    
-    <>
     <section className="admin-users-section">
       <div className="container">
         <h1>Admin Users Control</h1>
@@ -108,24 +90,30 @@ import { Link } from "react-router-dom";
             </tr>
           </thead>
           <tbody>
-            {users.map((curUser, index) => (
-              <tr key={index}>
-                <td>{curUser.username}</td>
-                <td>{curUser.email}</td>
-                <td>{curUser.phone}</td>
-                <td>
-                <Link to={`/admin/users/${curUser._id}/edit`}>Edit</Link>
-                </td>
-              <td>
-              <button onClick={() => deleteUser(curUser._id)}>Delete</button>
+            {users && users.length > 0 ? (
+              users.map((curUser) => (
+                <tr key={curUser._id}>
+                  <td>{curUser.username}</td>
+                  <td>{curUser.email}</td>
+                  <td>{curUser.phone}</td>
+                  <td>
+                    <Link to={`/admin/users/${curUser._id}/edit`}>Edit</Link>
                   </td>
+                  <td>
+                    <button onClick={() => deleteUser(curUser._id)}>Delete</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5">No users found.</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
     </section>
-  </>
   );
 };
+
 export default AdminUsers;

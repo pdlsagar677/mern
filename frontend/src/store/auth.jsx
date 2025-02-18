@@ -5,7 +5,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(""); // Store the token state
-  const [user, setUser] = useState(""); // Store the user data
+  const [user, setUser] = useState(null);   // Initialize user as null
   const [services, setServices] = useState([]); // Store services data
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,9 +22,9 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function: Reset token, remove from localStorage, refresh page
   const LogoutUser = () => {
-    setToken(""); // Reset token state
-    localStorage.removeItem("token"); // Remove token from localStorage
-    window.location.reload(); // Refresh the page
+    setToken("");
+    localStorage.removeItem("token");
+    window.location.reload();
   };
 
   // Fetch user data from the server using the token
@@ -38,20 +38,27 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.status === 200) {
-        setUser(response.data.userData);
+        setUser(response.data.userData); // Expecting userData to include role info
         setIsLoading(false);
       } else {
         console.error("Error fetching user data");
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error during user authentication:", error);
+      setIsLoading(false);
     }
   };
 
-  // Fetch services data
+  // Fetch services data (including the token in the header)
   const getServices = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/data/service");
+      const response = await axios.get("http://localhost:5000/api/admin/services", {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": authAuthorizationToken,
+        },
+      });
       if (response.status === 200) {
         setServices(response.data.data);
       } else {
@@ -62,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Use effect hooks to load user and services data when token changes
+  // Use effect hook to load user and services data when token changes
   useEffect(() => {
     if (token) {
       userAuthentication();
@@ -70,9 +77,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
+  // On mount, load token from localStorage if available
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setToken(token);
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+    }
   }, []);
 
   return (
@@ -80,10 +90,11 @@ export const AuthProvider = ({ children }) => {
       value={{
         isLoggedIn,
         storeTokenInLS,
-        LogoutUser, // Pass the LogoutUser function to the context
-        setToken, // Ensure setToken is available in the context
+        LogoutUser,
+        setToken,
         user,
         services,
+        setServices,
         authAuthorizationToken,
         isLoading,
       }}

@@ -25,7 +25,11 @@ const AdminLayout = () => {
                   <FaMessage /> Contact
                 </NavLink>
               </li>
-             
+              <li>
+                <NavLink to="/admin/services">
+                  <FaHome /> services
+                </NavLink>
+              </li>
 
               <li>
                 <NavLink to="/">

@@ -1,13 +1,17 @@
 import { useEffect } from "react";
-import { useAuth } from "../store/auth"; // Import the updated useAuth hook
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import axios from "axios"; // Import axios
+import { useAuth } from "../store/auth"; // Adjust the path as needed
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // Function to fetch services from the backend using axios
-const getServiceData = async (setServices) => {
+const getServiceData = async (setServices, token) => {
   try {
-    const response = await axios.get("http://localhost:5000/api/data/service"); // Using axios to fetch data
-
+    const response = await axios.get("http://localhost:5000/api/admin/services", {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token, // Pass the token from context
+      },
+    });
     if (response.status === 200) {
       setServices(response.data.data); // Update state with the fetched services data
     } else {
@@ -18,21 +22,33 @@ const getServiceData = async (setServices) => {
   }
 };
 
-const Service = () => {
-  const { services = [], setServices, isLoggedIn } = useAuth(); // Ensure services defaults to an empty array from the context
-  const navigate = useNavigate(); // Hook to navigate to login or register page
+const Service = () => { 
+  const { authAuthorizationToken, services = [], setServices, isLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
-  // If not logged in, redirect to the login page
+  // Fetch services on mount and when relevant values change
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/service"); // Redirect to login page if user is not logged in
+      navigate("/service"); // Redirect if user is not logged in
     } else {
-      // Fetch services if logged in and services are not already loaded
       if (services.length === 0) {
-        getServiceData(setServices); // Fetch services if not yet loaded
+        getServiceData(setServices, authAuthorizationToken);
       }
     }
-  }, [isLoggedIn, services, setServices, navigate]); // Add necessary dependencies to the effect
+  }, [isLoggedIn, services, setServices, navigate, authAuthorizationToken]);
+
+  // Listen for localStorage changes (e.g., when a new service is posted in another tab)
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      // When the "newService" key is updated, re-fetch the service data.
+      if (event.key === "newService") {
+        getServiceData(setServices, authAuthorizationToken);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [setServices, authAuthorizationToken]);
 
   return (
     <section className="section-services">
@@ -47,7 +63,6 @@ const Service = () => {
               <div className="card-img">
                 <img src="https://cdn.pixabay.com/photo/2023/07/24/01/31/plane-8145957_640.jpg" alt="design" width="200" />
               </div>
-
               <div className="card-details">
                 <div className="grid grid-two-cols">
                   <p>{curElem.provider}</p>
