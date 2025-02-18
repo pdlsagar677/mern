@@ -815,3 +815,9 @@ const updateUserById = async (req, res) => {
 };
 creating route for this 
 router.route("/users/update/:id").patch(authMiddleware,adminMiddleware,adminController.updateUserById);
+
+
+createa contact deletation and route
+and the previous controller of services to admin services and                                                            
+route it 
+like same as in users and create a function to add servcies 

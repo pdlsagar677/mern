@@ -1013,3 +1013,9 @@ export default AdminUpdate;
  and add in app jsx 
          <Route path="users/:id/edit" element={<AdminUpdate/>} />
 
+
+
+//now reate a contact delete as like a user delettion too
+
+and create a admin service page to post from admin page 
+and edit page as like the previous users like age
